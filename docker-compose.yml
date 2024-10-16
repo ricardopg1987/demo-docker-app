@@ -37,8 +37,6 @@ services:
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - pgdata:/var/lib/postgresql/data
-    # networks:  # Línea comentada para crear un error de red
-    #   - game_net
     ports:
       - "5432:5432"
     restart: unless-stopped
@@ -46,7 +44,7 @@ services:
 networks:
   game_net:
     driver: bridge
-  broken_net:  # Red separada introducida para el error
+  broken_net: 
     driver: bridge
 
 volumes:
