@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - webapp
+    networks:
+      - proxy_net  
+    restart: unless-stopped
+
+  webapp:
+    build: ./webapp
+    container_name: webapp
+    expose:
+      - "5000"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://gameuser:gamepass@db:5432/gamedb
+    networks:
+      - game_net
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:13-alpine
+    environment:
+      - POSTGRES_USER=gameuser
+      - POSTGRES_PASSWORD=gamepass
+      - POSTGRES_DB=gamedb
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - pgdata:/var/lib/postgresql/data
+    # networks:  # Línea comentada para crear un error de red
+    #   - game_net
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+networks:
+  game_net:
+    driver: bridge
+  broken_net:  # Red separada introducida para el error
+    driver: bridge
+
+volumes:
+  pgdata:
